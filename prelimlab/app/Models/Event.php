@@ -1,24 +1,32 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Event extends Model
+return new class extends Migration
 {
-    protected $fillable = [
-        'title',
-        'capacity',
-        'attendees_count'
-    ];
-
-    public function isFull()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        return $this->attendees_count >= $this->capacity;
+        Schema::create('events', function (Blueprint $table) {
+    $table->id();
+    $table->string('title');
+    $table->text('description');
+    $table->dateTime('event_date');
+    $table->string('category');
+    $table->integer('capacity');
+    $table->timestamps();
+});
     }
 
-    public function remainingSlots()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        return $this->capacity - $this->attendees_count;
+        //
     }
-}
+};
