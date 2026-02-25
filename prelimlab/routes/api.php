@@ -1,15 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\RegistrationController;
+use EventController;
+use Illuminate\Support\Facades\Route;
 
 // Users
 Route::get('/users', [UserController::class, 'index']);
 
 // Events
-Route::get('/events', [EventController::class, 'index']);
-
-// Registrations
-Route::get('/registrations', [RegistrationController::class, 'index']);
+Route::apiResource('events', EventController::class);
