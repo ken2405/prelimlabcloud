@@ -5,30 +5,38 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\EventResource;
+use App\Http\Requests\StoreEventRequest;
+use Illuminate\Http\Response;
 
 class EventController extends Controller
 {
     /**
-     * READ: List all events
+     * READ: List all events with optional search
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Event::all());
+        $query = Event::withCount('participants');
+
+        if ($request->has('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $events = $query->get();
+        return EventResource::collection($events);
     }
 
     /**
      * CREATE: Store a new event
      */
-    public function store(Request $request)
+    public function store(StoreEventRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1'
-        ]);
+        $event = Event::create($request->validated());
 
-        $event = Event::create($validated);
-
-        return response()->json($event, 201);
+        return response()->json([
+            'message' => 'Event created successfully',
+            'data' => new EventResource($event)
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -36,7 +44,8 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        return response()->json($event);
+        $event->loadCount('participants');
+        return new EventResource($event);
     }
 
     /**
@@ -45,13 +54,19 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'capacity' => 'sometimes|integer|min:' . $event->attendees_count
+            'title'       => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'event_date'  => 'sometimes|date|after:today',
+            'category'    => 'sometimes|string',
+            'capacity'    => 'sometimes|integer|min:' . $event->attendees_count
         ]);
 
         $event->update($validated);
 
-        return response()->json($event);
+        return response()->json([
+            'message' => 'Event updated successfully',
+            'data' => new EventResource($event)
+        ]);
     }
 
     /**
@@ -61,7 +76,9 @@ class EventController extends Controller
     {
         $event->delete();
 
-        return response()->json(['message' => 'Event deleted successfully']);
+        return response()->json([
+            'message' => 'Event deleted successfully'
+        ], Response::HTTP_NO_CONTENT);
     }
 
     /**
