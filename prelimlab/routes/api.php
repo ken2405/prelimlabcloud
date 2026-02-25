@@ -6,17 +6,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ParticipantController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
 // ==========================================
 // PUBLIC ROUTES (No token required)
 // ==========================================
@@ -25,8 +14,9 @@ use App\Http\Controllers\ParticipantController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Public Event Viewing (Allow anyone to see available events)
+// Public Event Viewing
 Route::get('/events', [EventController::class, 'index']);
+Route::get('/events/{event}', [EventController::class, 'show']);
 
 
 // ==========================================
@@ -34,7 +24,7 @@ Route::get('/events', [EventController::class, 'index']);
 // ==========================================
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Get the currently authenticated user's details
+    // Authenticated User Info
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
@@ -44,9 +34,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Event Management
     Route::post('/events', [EventController::class, 'store']);
-    Route::get('/events/stats', [EventController::class, 'stats']); // Note: Place specific routes like /stats above dynamic ones if you add /events/{event} later
+    Route::put('/events/{event}', [EventController::class, 'update']);
+    Route::delete('/events/{event}', [EventController::class, 'destroy']);
 
-    // Participant Registration (Registering for a specific event)
+    // Event Statistics (Capacity Info)
+    Route::get('/events/{event}/stats', [EventController::class, 'stats']);
+
+    // Participant Registration (Capacity Controlled)
     Route::post('/events/{event}/register', [ParticipantController::class, 'register']);
 
 });
