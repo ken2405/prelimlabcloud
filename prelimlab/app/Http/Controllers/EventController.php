@@ -14,24 +14,29 @@ class EventController extends Controller
     /**
      * READ: List all events
      */
-    public function index()
+     public function index()
     {
-        return response()->json(Event::all());
+        return EventResource::collection(Event::all());
+    }
+
+    public function show(Event $event)
+    {
+        return response()->json([
+            'data' => new EventResource($event)
+        ]);
     }
 
     /**
      * CREATE: Store a new event
      */
-    public function store(Request $request)
+    public function store(StoreEventRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1'
-        ]);
+        $event = Event::create($request->validated());
 
-        $event = Event::create($validated);
-
-        return response()->json($event, 201);
+        return response()->json([
+            'message' => 'Event created successfully',
+            'data' => new EventResource($event)
+        ], 201);
     }
 
     /**
@@ -47,17 +52,12 @@ class EventController extends Controller
      */
     public function update(UpdateEventRequest $request, Event $event)
     {
-        $validated = $request->validate([
-            'title'       => 'sometimes|string|max:255',
-            'description' => 'sometimes|string',
-            'event_date'  => 'sometimes|date|after:today',
-            'category'    => 'sometimes|string',
-            'capacity'    => 'sometimes|integer|min:' . $event->attendees_count
+        $event->update($request->validated());
+
+        return response()->json([
+            'message' => 'Event updated successfully',
+            'data' => new EventResource($event)
         ]);
-
-        $event->update($validated);
-
-        return response()->json($event);
     }
     /**
      * DELETE: Remove an event
