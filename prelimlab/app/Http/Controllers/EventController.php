@@ -12,14 +12,29 @@ use Illuminate\Http\Response;
 class EventController extends Controller
 {
     /**
-     * READ: List all events with optional search
+     * READ: List all events with optional search, date, and category filters
      */
     public function index(Request $request)
     {
         $query = Event::withCount('participants');
 
+        // Search by title
         if ($request->has('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by date range
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('event_date', [$request->start_date, $request->end_date]);
+        } elseif ($request->has('start_date')) {
+            $query->where('event_date', '>=', $request->start_date);
+        } elseif ($request->has('end_date')) {
+            $query->where('event_date', '<=', $request->end_date);
+        }
+
+        // Filter by category
+        if ($request->has('category')) {
+            $query->where('category', $request->category);
         }
 
         $events = $query->get();
