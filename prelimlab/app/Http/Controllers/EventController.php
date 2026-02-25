@@ -1,11 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
-use App\Http\Resources\EventResource;
-use App\Http\Requests\StoreEventRequest;
-use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
