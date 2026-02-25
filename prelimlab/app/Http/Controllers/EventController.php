@@ -1,0 +1,73 @@
+<?php
+namespace App\Http\Controllers;
+
+use App\Models\Event;
+use Illuminate\Http\Request;
+use App\Http\Resources\EventResource;
+use App\Http\Requests\StoreEventRequest;
+use Illuminate\Http\Response;
+
+class EventController extends Controller
+{
+    
+    public function index(Request $request)
+    {
+        $query = Event::withCount('participants');
+
+    if ($request->has('search')) {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }
+
+    $events = $query->get();
+    return EventResource::collection($events);
+    }
+
+    
+    public function store(StoreEventRequest $request)
+    {
+        $event = Event::create($request->validated());
+
+        return response()->json([
+            'message' => 'Event created successfully',
+            'data' => new EventResource($event)
+        ], Response::HTTP_CREATED);
+    }
+
+  
+    public function show(Event $event)
+    {
+      
+        $event->loadCount('participants');
+        return new EventResource($event);
+    }
+
+    
+    public function update(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'title'       => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'event_date'  => 'sometimes|date|after:today',
+            'category'    => 'sometimes|string',
+            'capacity'    => 'sometimes|integer|min:1',
+        ]);
+
+        $event->update($validated);
+
+        return response()->json([
+            'message' => 'Event updated successfully',
+            'data' => new EventResource($event)
+        ]);
+    }
+
+   
+    public function destroy(Event $event)
+    {
+        $event->delete();
+
+        return response()->json([
+            'message' => 'Event deleted successfully'
+        ], Response::HTTP_NO_CONTENT);
+    }
+
+}
