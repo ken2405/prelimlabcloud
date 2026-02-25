@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\EventResource;
+use App\Http\Requests\StoreEventRequest;
+use Illuminate\Http\Response;
 
 class EventController extends Controller
 {
@@ -42,18 +45,20 @@ class EventController extends Controller
     /**
      * UPDATE: Update event details
      */
-    public function update(Request $request, Event $event)
+    public function update(UpdateEventRequest $request, Event $event)
     {
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'capacity' => 'sometimes|integer|min:' . $event->attendees_count
+            'title'       => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'event_date'  => 'sometimes|date|after:today',
+            'category'    => 'sometimes|string',
+            'capacity'    => 'sometimes|integer|min:' . $event->attendees_count
         ]);
 
         $event->update($validated);
 
         return response()->json($event);
     }
-
     /**
      * DELETE: Remove an event
      */
