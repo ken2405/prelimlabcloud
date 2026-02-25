@@ -38,15 +38,27 @@ class ParticipantController extends Controller
         return response()->json($participant, 201);
     }
 
-    public function stats()
+    /**
+     * GET /api/events/{event}/stats
+     * Get event participant statistics
+     */
+    public function stats(Event $event)
     {
+        $participantCount = $event->participants()->count();
+
         return response()->json([
-            'total_events' => Event::count(),
-            'total_participants' => Participant::count(),
-            'popular_category' => Event::select('category')
-                ->groupBy('category')
-                ->orderByRaw('COUNT(*) DESC')
-                ->value('category'),
+            'success' => true,
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'capacity' => $event->capacity,
+            ],
+            'stats' => [
+                'total_registered' => $participantCount,
+                'remaining_slots' => $event->capacity - $participantCount,
+                'capacity_percentage' => round(($participantCount / $event->capacity) * 100, 2),
+                'is_full' => $event->isEventFull(),
+            ]
         ]);
     }
 }

@@ -18,6 +18,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/events', [EventController::class, 'index']);
 Route::get('/events/{event}', [EventController::class, 'show']);
 
+// Statistics
+Route::get('/stats', [EventController::class, 'globalStats']);
+Route::get('/events/{event}/stats', [EventController::class, 'stats']);
+
+// Public Participant Viewing & Registration
+Route::get('/events/{event}/participants', [ParticipantController::class, 'index']);
+Route::get('/events/{event}/participants/{participant}', [ParticipantController::class, 'show']);
+Route::post('/events/{event}/register', [ParticipantController::class, 'register']);
+
 
 // ==========================================
 // PROTECTED ROUTES (Requires Sanctum Token)
@@ -32,13 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 
- Route::apiResource('events', EventController::class);
-Route::post('events/{event}/attend', [EventController::class, 'addAttendee']);
+    // Event CRUD Operations
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{event}', [EventController::class, 'update']);
+    Route::delete('/events/{event}', [EventController::class, 'destroy']);
 
-    // Event Statistics (Capacity Info)
-    Route::get('/events/{event}/stats', [EventController::class, 'stats']);
-
-    // Participant Registration (Capacity Controlled)
-    Route::post('/events/{event}/register', [ParticipantController::class, 'register']);
+    // Participant Management (Update & Delete)
+    Route::put('/events/{event}/participants/{participant}', [ParticipantController::class, 'update']);
+    Route::delete('/events/{event}/participants/{participant}', [ParticipantController::class, 'destroy']);
 
 });
