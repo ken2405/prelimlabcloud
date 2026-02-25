@@ -9,23 +9,17 @@ use Illuminate\Http\Response;
 
 class EventController extends Controller
 {
-    /**
-     * DISPLAY A LISTING (READ - INDEX)
-     * Includes Search and Filtering (Dev 9 & 10)
-     */
+    
     public function index(Request $request)
     {
         $query = Event::withCount('participants');
 
-        // Filter by Search Term (Title)
-        if ($request->has('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
+    if ($request->has('search')) {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }
 
-      
-
-        $events = $query->get();
-        return EventResource::collection($events);
+    $events = $query->get();
+    return EventResource::collection($events);
     }
 
     
@@ -42,14 +36,12 @@ class EventController extends Controller
   
     public function show(Event $event)
     {
-        // Load participant count for the resource
+      
         $event->loadCount('participants');
         return new EventResource($event);
     }
 
-    /**
-     * UPDATE THE SPECIFIED RESOURCE (UPDATE)
-     */
+    
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
@@ -68,9 +60,7 @@ class EventController extends Controller
         ]);
     }
 
-    /**
-     * REMOVE THE SPECIFIED RESOURCE (DELETE)
-     */
+   
     public function destroy(Event $event)
     {
         $event->delete();
