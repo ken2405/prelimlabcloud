@@ -9,83 +9,87 @@ use Illuminate\Support\Facades\DB;
 class EventController extends Controller
 {
     /**
-     * READ: List all events
+     * DISPLAY A LISTING (READ - INDEX)
+     * Includes Search and Filtering (Dev 9 & 10)
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Event::all());
+        $query = Event::withCount('participants');
+
+        // Filter by Search Term (Title)
+        if ($request->has('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by Category
+        if ($request->has('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Filter by Date
+        if ($request->has('date')) {
+            $query->whereDate('event_date', $request->date);
+        }
+
+        $events = $query->get();
+        return EventResource::collection($events);
     }
 
     /**
-     * CREATE: Store a new event
+     * STORE A NEWLY CREATED RESOURCE (CREATE)
+     * Uses StoreEventRequest for Validation (Dev 13)
      */
-    public function store(Request $request)
+    public function store(StoreEventRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1'
-        ]);
+        $event = Event::create($request->validated());
 
-        $event = Event::create($validated);
-
-        return response()->json($event, 201);
+        return response()->json([
+            'message' => 'Event created successfully',
+            'data' => new EventResource($event)
+        ], Response::HTTP_CREATED);
     }
 
     /**
-     * READ: Show a single event
+     * DISPLAY THE SPECIFIED RESOURCE (READ - SHOW)
      */
     public function show(Event $event)
     {
-        return response()->json($event);
+        // Load participant count for the resource
+        $event->loadCount('participants');
+        return new EventResource($event);
     }
 
     /**
-     * UPDATE: Update event details
+     * UPDATE THE SPECIFIED RESOURCE (UPDATE)
      */
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'capacity' => 'sometimes|integer|min:' . $event->attendees_count
+            'title'       => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'event_date'  => 'sometimes|date|after:today',
+            'category'    => 'sometimes|string',
+            'capacity'    => 'sometimes|integer|min:1',
         ]);
 
         $event->update($validated);
 
-        return response()->json($event);
+        return response()->json([
+            'message' => 'Event updated successfully',
+            'data' => new EventResource($event)
+        ]);
     }
 
     /**
-     * DELETE: Remove an event
+     * REMOVE THE SPECIFIED RESOURCE (DELETE)
      */
     public function destroy(Event $event)
     {
         $event->delete();
 
-        return response()->json(['message' => 'Event deleted successfully']);
+        return response()->json([
+            'message' => 'Event deleted successfully'
+        ], Response::HTTP_NO_CONTENT);
     }
 
-    /**
-     * CUSTOM ACTION: Add attendee with Race Condition protection
-     */
-    public function addAttendee(Event $event)
-    {
-        return DB::transaction(function () use ($event) {
-            // "lockForUpdate" prevents two users from reading the same 
-            // count at the exact same millisecond.
-            $lockedEvent = Event::where('id', $event->id)->lockForUpdate()->first();
-
-            if ($lockedEvent->attendees_count >= $lockedEvent->capacity) {
-                return response()->json([
-                    'message' => 'Event capacity reached'
-                ], 400);
-            }
-
-            $lockedEvent->increment('attendees_count');
-
-            return response()->json([
-                'message' => 'Attendee added',
-                'remaining_slots' => $lockedEvent->capacity - $lockedEvent->attendees_count
-            ]);
-        });
-    }
 }
