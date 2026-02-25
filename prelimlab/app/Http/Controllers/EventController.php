@@ -22,24 +22,13 @@ class EventController extends Controller
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        // Filter by Category
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
-        }
-
-        // Filter by Date
-        if ($request->has('date')) {
-            $query->whereDate('event_date', $request->date);
-        }
+      
 
         $events = $query->get();
         return EventResource::collection($events);
     }
 
-    /**
-     * STORE A NEWLY CREATED RESOURCE (CREATE)
-     * Uses StoreEventRequest for Validation (Dev 13)
-     */
+    
     public function store(StoreEventRequest $request)
     {
         $event = Event::create($request->validated());
@@ -50,9 +39,7 @@ class EventController extends Controller
         ], Response::HTTP_CREATED);
     }
 
-    /**
-     * DISPLAY THE SPECIFIED RESOURCE (READ - SHOW)
-     */
+  
     public function show(Event $event)
     {
         // Load participant count for the resource
