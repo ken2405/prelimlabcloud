@@ -6,22 +6,37 @@ use App\Models\Event;
 use App\Models\Participant;
 use Illuminate\Http\Request;
 
-class ParticipantController extends Controller {
-
+class ParticipantController extends Controller
+{
+    /**
+     * Register a participant for a specific event.
+     * - Checks if the event is already full
+     * - Validates input (name, email)
+     * - Creates the participant linked to the event
+     */
     public function register(Request $request, Event $event)
     {
-        if ($event->participants()->count() >= $event->capacity) {
-            return response()->json(['error' => 'Event is full'], 422);
+        // 1) Check capacity first
+        $isEventFull = $event->participants()->count() >= $event->capacity;
+
+        if ($isEventFull) {
+            return response()->json([
+                'error' => 'Event is full'
+            ], 422);
         }
 
-        $participant = $event->participants()->create($request->validate([
-            'name' => 'required',
-            'email' => 'required|email'
-        ]));
+        // 2) Validate incoming data
+        $validated = $request->validate([
+            'name'  => ['required'],
+            'email' => ['required', 'email'],
+        ]);
 
+        // 3) Create participant under this event
+        $participant = $event->participants()->create($validated);
+
+        // 4) Return created participant
         return response()->json($participant, 201);
-    } 
-
+    }
 
     public function stats()
     {
