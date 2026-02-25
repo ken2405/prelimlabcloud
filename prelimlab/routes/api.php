@@ -32,10 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Event Management
-    Route::post('/events', [EventController::class, 'store']);
-    Route::put('/events/{event}', [EventController::class, 'update']);
-    Route::delete('/events/{event}', [EventController::class, 'destroy']);
+ Route::apiResource('events', EventController::class);
+Route::post('events/{event}/attend', [EventController::class, 'addAttendee']);
 
     // Event Statistics (Capacity Info)
     Route::get('/events/{event}/stats', [EventController::class, 'stats']);
