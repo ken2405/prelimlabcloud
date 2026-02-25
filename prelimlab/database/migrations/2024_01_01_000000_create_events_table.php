@@ -1,23 +1,19 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    /**
+     * This migration is replaced by 2026_02_25_080231_events.php
+     * Keeping it empty to avoid conflicts
+     */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->integer('capacity');
-            $table->integer('attendees_count')->default(0);
-            $table->timestamps();
-        });
+        // Already created in 2026_02_25_080231_events.php
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        // Already handled in 2026_02_25_080231_events.php
     }
 };

@@ -1,32 +1,36 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Models;
 
-return new class extends Migration
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Event extends Model
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    protected $fillable = [
+        'title',
+        'description',
+        'event_date',
+        'category',
+        'capacity',
+    ];
+
+    protected $casts = [
+        'event_date' => 'datetime',
+    ];
+
+    public function participants(): HasMany
     {
-        Schema::create('events', function (Blueprint $table) {
-    $table->id();
-    $table->string('title');
-    $table->text('description');
-    $table->dateTime('event_date');
-    $table->string('category');
-    $table->integer('capacity');
-    $table->timestamps();
-});
+        return $this->hasMany(Participant::class);
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function getRemainingCapacityAttribute()
     {
-        //
+        return $this->capacity - $this->participants()->count();
     }
-};
+
+    public function isEventFull(): bool
+    {
+        return $this->participants()->count() >= $this->capacity;
+    }
+}
