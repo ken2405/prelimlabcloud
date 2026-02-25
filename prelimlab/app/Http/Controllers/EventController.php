@@ -2,95 +2,65 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use Illuminate\Http\Request;
 use App\Http\Resources\EventResource;
-use App\Http\Requests\StoreEventRequest;
-use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-    /**
-     * DISPLAY A LISTING (READ - INDEX)
-     * Includes Search and Filtering (Dev 9 & 10)
-     */
-    public function index(Request $request)
+    // 1. READ ALL (Includes search/filter logic from Devs 9 & 10)
+    public function index(Request $request) 
     {
-        $query = Event::withCount('participants');
-
-        // Filter by Search Term (Title)
-        if ($request->has('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
-
-        // Filter by Category
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
-        }
-
-        // Filter by Date
-        if ($request->has('date')) {
-            $query->whereDate('event_date', $request->date);
-        }
-
-        $events = $query->get();
-        return EventResource::collection($events);
+        
     }
 
-    /**
-     * STORE A NEWLY CREATED RESOURCE (CREATE)
-     * Uses StoreEventRequest for Validation (Dev 13)
-     */
-    public function store(StoreEventRequest $request)
+    // 2. CREATE
+    public function store(Request $request) 
     {
-        $event = Event::create($request->validated());
+        // Validating directly via the standard Request object
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'event_date' => 'required|date|after:today',
+            'category' => 'required|string',
+            'capacity' => 'required|integer|min:1',
+        ]);
 
-        return response()->json([
-            'message' => 'Event created successfully',
-            'data' => new EventResource($event)
-        ], Response::HTTP_CREATED);
-    }
-
-    /**
-     * DISPLAY THE SPECIFIED RESOURCE (READ - SHOW)
-     */
-    public function show(Event $event)
-    {
-        // Load participant count for the resource
-        $event->loadCount('participants');
+        $event = Event::create($validated);
+        
         return new EventResource($event);
     }
 
-    /**
-     * UPDATE THE SPECIFIED RESOURCE (UPDATE)
-     */
-    public function update(Request $request, Event $event)
+    // 3. READ SINGLE
+    public function show(Event $event) 
     {
+        // Laravel automatically fetches the event by ID via Route Model Binding
+        return new EventResource($event);
+    }
+
+    // 4. UPDATE
+    public function update(Request $request, Event $event) 
+    {
+        // Using 'sometimes' means it only validates if the field is present in the request
         $validated = $request->validate([
-            'title'       => 'sometimes|string|max:255',
+            'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
-            'event_date'  => 'sometimes|date|after:today',
-            'category'    => 'sometimes|string',
-            'capacity'    => 'sometimes|integer|min:1',
+            'event_date' => 'sometimes|date|after:today',
+            'category' => 'sometimes|string',
+            'capacity' => 'sometimes|integer|min:1',
         ]);
 
         $event->update($validated);
-
-        return response()->json([
-            'message' => 'Event updated successfully',
-            'data' => new EventResource($event)
-        ]);
+        
+        return new EventResource($event);
     }
 
-    /**
-     * REMOVE THE SPECIFIED RESOURCE (DELETE)
-     */
-    public function destroy(Event $event)
+    // 5. DELETE
+    public function destroy(Event $event) 
     {
         $event->delete();
-
+        
         return response()->json([
             'message' => 'Event deleted successfully'
-        ], Response::HTTP_NO_CONTENT);
+        ], 200); // 200 OK status
     }
-
 }
