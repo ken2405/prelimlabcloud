@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\{AuthController, EventController, ParticipantController, PublicEventController};
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -7,7 +8,7 @@ Route::get('/', function () {
 });
 
 // Public event listing
-Route::get('/events', [PublicEventController::class, 'index'])->name('events.index');
+Route::get('/events', [EventController::class, 'index']);
 
-// Single event page (optional)
+Route::get('/events', [PublicEventController::class, 'index'])->name('events.index');
 Route::get('/events/{id}', [PublicEventController::class, 'show'])->name('events.show');

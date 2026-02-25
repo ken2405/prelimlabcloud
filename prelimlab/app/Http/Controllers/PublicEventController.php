@@ -3,26 +3,36 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Event;   // Make sure Event model exists
-use App\Models\Participant; // Optional if you want
+use App\Models\Event;
 
 class PublicEventController extends Controller
 {
-    // List all public events
-    public function index()
+    public function index(Request $request)
     {
-        // Get events that are public, approved, upcoming
-        $events = Event::withCount('participants')   // counts participants for capacity
+        $query = Event::withCount('participants')
             ->where('is_public', true)
-            ->where('is_approved', true)
-            ->where('event_date', '>=', now())
-            ->orderBy('event_date', 'asc')
-            ->paginate(6);                          // 6 per page
+            ->where('is_approved', true);
+
+        // Optional search/filter
+        if ($request->filled('search')) {
+            $query->where('title', 'like', "%{$request->search}%");
+        }
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+        if ($request->filled('date')) {
+            $query->whereDate('event_date', $request->date);
+        }
+
+        // upcoming events
+        $query->where('event_date', '>=', now())
+              ->orderBy('event_date', 'asc');
+
+        $events = $query->paginate(6);
 
         return view('public.events.index', compact('events'));
     }
 
-    // Optional: Show single event details
     public function show($id)
     {
         $event = Event::withCount('participants')
