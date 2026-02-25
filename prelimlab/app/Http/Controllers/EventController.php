@@ -13,7 +13,25 @@ class EventController extends Controller
      */
     public function index()
     {
-        return response()->json(Event::all());
+
+        $query = Event::query();
+
+        // Filter by category
+        if ($request->has('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
+        // Filter by date
+        if ($request->has('date')) {
+            $query->whereDate('event_date', $request->input('date'));
+        }
+
+        // Optionally order by date
+        $query->orderBy('event_date', 'asc');
+
+        // universal
+        return response()->json($query->get());
+
     }
 
     /**
