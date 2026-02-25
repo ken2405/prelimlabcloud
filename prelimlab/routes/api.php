@@ -4,21 +4,62 @@ use App\Http\Controllers\EventController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// ==========================================
+// PUBLIC ROUTES (No token required)
+// ==========================================
 
-// List & search events
+// Authentication
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+// Public Event Viewing
 Route::get('/events', [EventController::class, 'index']);
-
-// Create new event
-Route::post('/events', [EventController::class, 'store']);
-
-// Show single event
 Route::get('/events/{event}', [EventController::class, 'show']);
 
-// Update an event
-Route::put('/events/{event}', [EventController::class, 'update']);
 
-// Delete an event
-Route::delete('/events/{event}', [EventController::class, 'destroy']);
+// ==========================================
+// PROTECTED ROUTES (Requires Sanctum Token)
+// ==========================================
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Authenticated User Info
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // Logout
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // ==========================================
+    // Event Management (CRUD)
+    // ==========================================
+
+    
+    // List & search events
+    Route::get('/events', [EventController::class, 'index']);
+
+    // Create new event
+    Route::post('/events', [EventController::class, 'store']);
+
+    // Show single event
+    Route::get('/events/{event}', [EventController::class, 'show']);
+
+    // Update an event
+    Route::put('/events/{event}', [EventController::class, 'update']);
+
+    // Delete an event
+    Route::delete('/events/{event}', [EventController::class, 'destroy']);
+
+
+    
+
+    Route::post('events/{event}/attend', [EventController::class, 'addAttendee']);
+
+    // Event Statistics (Capacity Info)
+    Route::get('/events/{event}/stats', [EventController::class, 'stats']);
+
+    // Participant Registration (Capacity Controlled)
+    Route::post('/events/{event}/register', [ParticipantController::class, 'register']);
+
+});
+
