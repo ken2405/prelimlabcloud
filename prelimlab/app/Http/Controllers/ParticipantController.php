@@ -21,17 +21,4 @@ class ParticipantController extends Controller {
 
         return response()->json($participant, 201);
     } 
-
-
-    public function stats()
-    {
-        return response()->json([
-            'total_events' => Event::count(),
-            'total_participants' => Participant::count(),
-            'popular_category' => Event::select('category')
-                ->groupBy('category')
-                ->orderByRaw('COUNT(*) DESC')
-                ->value('category'),
-        ]);
-    }
 }
