@@ -80,9 +80,9 @@ class EventController extends Controller
             'success' => true,
             'pagination' => [
                 'total' => $results->total(),
-                'per_page' => $results->per_page(),
-                'current_page' => $results->current_page(),
-                'last_page' => $results->last_page(),
+                'per_page' => $results->perPage(),
+                'current_page' => $results->currentPage(),
+                'last_page' => $results->lastPage(),
             ],
             'data' => $results->items()
         ]);
