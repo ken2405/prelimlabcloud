@@ -1,24 +1,37 @@
-*.log
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+# Laravel specific
+/vendor
 /node_modules
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
-/storage/pail
-/vendor
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Environment variables (CRITICAL TO IGNORE)
+.env
+.env.backup
+.env.production
+.env.local
+
+# Testing tools
+.phpunit.result.cache
+.pest.result.cache
 Homestead.json
 Homestead.yaml
+
+# NPM/Yarn/PNPM logs
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnpm-debug.log
+
+# IDE and OS files
+/.fleet
+/.idea
+/.vscode
+.DS_Store
 Thumbs.db
